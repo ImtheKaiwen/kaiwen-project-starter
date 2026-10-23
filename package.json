@@ -1,0 +1,57 @@
+{
+  "name": "kaiwen-project-starter",
+  "version": "0.1.0",
+  "description": "Kaiwen çalışma alanı için hızlı proje başlatıcı ve güvenli proje oluşturucu",
+  "author": "Kaiwen",
+  "main": "out/main/index.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "preview": "electron-vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dist:win": "npm run build && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "marked": "^16.4.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sanitize-html": "^2.17.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@vitejs/plugin-react": "latest",
+    "@types/node": "^24.9.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/sanitize-html": "^2.16.0",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^6.0.0",
+    "eslint": "^9.38.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^16.4.0",
+    "jsdom": "^27.0.1",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.46.2",
+    "vite": "^8.0.0",
+    "vitest": "^5.0.5"
+  },
+  "build": {
+    "appId": "com.kaiwen.projectstarter",
+    "productName": "Kaiwen Project Starter",
+    "asar": true,
+    "directories": { "output": "release" },
+    "files": ["out/**/*", "package.json"],
+    "extraResources": [{ "from": "resources/branding", "to": "branding" }],
+    "win": { "target": ["nsis"], "icon": "resources/branding/logos/kaiwen-logo-transparent.png", "artifactName": "${productName}-${version}-${arch}.${ext}" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  },
+  "engines": { "node": ">=22.12.0" }
+}
