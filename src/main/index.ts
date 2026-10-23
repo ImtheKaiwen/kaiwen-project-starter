@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme } from 'electron'
+import { app, BrowserWindow, Menu, nativeTheme, Tray } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { registerIpc } from './ipc'
@@ -9,10 +9,14 @@ import { ProjectCatalog } from './services/projectCatalog'
 import { ProjectCreationService } from './services/projectCreationService'
 import { SettingsService } from './services/settingsService'
 import { TemplateService } from './services/templateService'
+import { UpdateService } from './services/updateService'
 import type { OperationRecord } from '../shared/contracts'
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url))
 let mainWindow: BrowserWindow | null = null
+let tray: Tray | null = null
+let isQuitting = false
+const updater = new UpdateService(() => mainWindow)
 
 function createWindow(): void {
   const icon = app.isPackaged ? path.join(process.resourcesPath, 'branding', 'logos', 'kaiwen-logo-transparent.png') : path.join(app.getAppPath(), 'resources', 'branding', 'logos', 'kaiwen-logo-transparent.png')
@@ -31,11 +35,17 @@ function createWindow(): void {
   const runner = new SafeCommandRunner(); const github = new GithubService(runner); const templates = new TemplateService()
   const operations = new JsonStore<OperationRecord[]>(path.join(userData, 'operations.json'), () => [])
   const creator = new ProjectCreationService(templates, catalog, github, runner, operations)
-  registerIpc(mainWindow, { settings, catalog, runner, github, templates, creator })
+  registerIpc(mainWindow, { settings, catalog, runner, github, templates, creator, updater })
   if (process.env.ELECTRON_RENDERER_URL) void mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   else void mainWindow.loadFile(path.join(currentDir, '../renderer/index.html'))
   mainWindow.once('ready-to-show', () => { mainWindow?.show() })
+  mainWindow.on('close', (event) => { if (!isQuitting && updater.isDownloading) { event.preventDefault(); mainWindow?.hide() } })
   mainWindow.on('closed', () => { mainWindow = null })
+  if (!tray) {
+    tray = new Tray(icon); tray.setToolTip('Kaiwen Project Starter')
+    tray.setContextMenu(Menu.buildFromTemplate([{ label: 'Göster', click: () => { mainWindow?.show(); mainWindow?.focus() } }, { type: 'separator' }, { label: 'Çıkış', click: () => { isQuitting = true; app.quit() } }]))
+    tray.on('click', () => { mainWindow?.show(); mainWindow?.focus() })
+  }
 }
 
 app.whenReady().then(async () => {
@@ -43,6 +53,8 @@ app.whenReady().then(async () => {
   const settings = await new SettingsService(settingsPath, path.join(app.getPath('desktop'), 'Kaiwen')).get()
   nativeTheme.themeSource = settings.theme
   createWindow()
+  setTimeout(() => { void updater.check().catch(() => undefined) }, 4000)
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow() })
 })
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
+app.on('before-quit', () => { isQuitting = true })
+app.on('window-all-closed', () => { if (process.platform !== 'darwin' && !updater.isDownloading) app.quit() })

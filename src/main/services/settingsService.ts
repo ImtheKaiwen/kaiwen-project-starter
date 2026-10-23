@@ -15,7 +15,7 @@ export class SettingsService {
   }
 
   async save(settings: AppSettings): Promise<AppSettings> {
-    if (settings.version !== 1 || !['system', 'light', 'dark'].includes(settings.theme)) throw new Error('Desteklenmeyen ayar biçimi.')
+    if (settings.version !== 1 || !['system', 'light', 'dark'].includes(settings.theme) || !['tr', 'en'].includes(settings.language)) throw new Error('Desteklenmeyen ayar biçimi.')
     if (!settings.workspaceRoot || !path.isAbsolute(settings.workspaceRoot)) throw new Error('Geçerli bir çalışma alanı kökü seçin.')
     await mkdir(settings.workspaceRoot, { recursive: true }); await access(settings.workspaceRoot, constants.R_OK | constants.W_OK)
     const seen = new Set<string>()
@@ -27,7 +27,7 @@ export class SettingsService {
     const presetIds = new Set<string>()
     for (const preset of settings.quickCreatePresets) {
       if (!preset.id || presetIds.has(preset.id) || !preset.name.trim()) throw new Error('Senaryo adı ve kimliği benzersiz olmalıdır.')
-      if (!settings.categories.some((category) => category.id === preset.categoryId && category.enabled)) throw new Error(`${preset.name} için etkin bir kategori seçin.`)
+      if (preset.categoryId !== null && !settings.categories.some((category) => category.id === preset.categoryId && category.enabled)) throw new Error(`${preset.name} için etkin bir kategori seçin veya oluştururken sor seçeneğini kullanın.`)
       presetIds.add(preset.id)
     }
     await this.store.write(settings); return settings

@@ -11,9 +11,10 @@ import type { ProjectCatalog } from './services/projectCatalog'
 import type { ProjectCreationService } from './services/projectCreationService'
 import type { GithubService } from './services/githubService'
 import type { CommandRunner } from './services/commandRunner'
+import type { UpdateService } from './services/updateService'
 import { readStartup, syncStartup } from './services/startupService'
 
-interface Services { settings: SettingsService; templates: TemplateService; catalog: ProjectCatalog; creator: ProjectCreationService; github: GithubService; runner: CommandRunner }
+interface Services { settings: SettingsService; templates: TemplateService; catalog: ProjectCatalog; creator: ProjectCreationService; github: GithubService; runner: CommandRunner; updater: UpdateService }
 const ok = <T>(value: T): Result<T> => ({ ok: true, value })
 const failure = (error: unknown): Result<never> => ({ ok: false, error: error instanceof Error ? error.message : 'Beklenmeyen bir hata oluştu.' })
 
@@ -78,6 +79,9 @@ export function registerIpc(window: BrowserWindow, services: Services): void {
   handle(IPC.githubLogin, async () => { await shell.openExternal('https://cli.github.com/manual/gh_auth_login'); return ok(undefined) })
   handle(IPC.setTheme, async (theme: Theme) => { if (!['system', 'light', 'dark'].includes(theme)) throw new Error('Geçersiz tema.'); nativeTheme.themeSource = theme; return ok(undefined) })
   handle(IPC.getStartupStatus, async () => ok(readStartup(app.isPackaged, app)))
+  handle(IPC.checkForUpdates, async () => ok(await services.updater.check()))
+  handle(IPC.downloadUpdate, async () => { await services.updater.download(); return ok(undefined) })
+  handle(IPC.installUpdate, async () => { services.updater.install(); return ok(undefined) })
 }
 
 async function launchEditor(settings: AppSettings, projectPath: string, runner: CommandRunner): Promise<void> {

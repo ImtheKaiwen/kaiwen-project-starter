@@ -3,18 +3,18 @@ import { Icon } from './Icon'
 
 export interface SelectOption { value: string; label: string; description?: string }
 
-interface Props { value: string; options: SelectOption[]; onChange(value: string): void; ariaLabel: string; compact?: boolean }
+interface Props { value: string; options: SelectOption[]; onChange(value: string): void; ariaLabel: string; compact?: boolean; placeholder?: string }
 
-export function SelectControl({ value, options, onChange, ariaLabel, compact = false }: Props) {
+export function SelectControl({ value, options, onChange, ariaLabel, compact = false, placeholder = 'Seçin' }: Props) {
   const [open, setOpen] = useState(false); const root = useRef<HTMLDivElement>(null)
-  const selected = options.find((option) => option.value === value) ?? options[0]
+  const selected = options.find((option) => option.value === value)
   useEffect(() => {
     const close = (event: MouseEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(false) }
     document.addEventListener('mousedown', close); return () => document.removeEventListener('mousedown', close)
   }, [])
   return <div className={`select-control ${compact ? 'is-compact' : ''}`} ref={root}>
     <button type="button" className="select-control__trigger" aria-label={ariaLabel} aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((current) => !current)}>
-      <span>{selected?.label ?? 'Seçin'}</span><Icon name="chevronDown" size={15} />
+      <span>{selected?.label ?? placeholder}</span><Icon name="chevronDown" size={15} />
     </button>
     {open && <div className="select-control__menu" role="listbox">
       {options.map((option) => <button type="button" key={option.value} className={option.value === value ? 'is-selected' : ''} role="option" aria-selected={option.value === value} onClick={() => { onChange(option.value); setOpen(false) }}>

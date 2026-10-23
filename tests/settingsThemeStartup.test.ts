@@ -13,8 +13,8 @@ describe('settings, theme and startup', () => {
   it('varsayılan tema sistem, startup ve GitHub kapalıdır; ayarlar atomik okunur', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'kaiwen-settings-')); roots.push(root)
     const service = new SettingsService(path.join(root, 'data', 'settings.json'), root)
-    const settings = await service.get(); expect(settings.theme).toBe('system'); expect(settings.startAtLogin).toBe(false); expect(settings.defaults.createGithubRepo).toBe(false); expect(settings.quickCreatePresets).toEqual([])
-    settings.theme = 'dark'; await service.save(settings); expect((await service.get()).theme).toBe('dark')
+    const settings = await service.get(); expect(settings.theme).toBe('system'); expect(settings.language).toBe('tr'); expect(settings.startAtLogin).toBe(false); expect(settings.defaults.createGithubRepo).toBe(false); expect(settings.quickCreatePresets).toEqual([])
+    settings.theme = 'dark'; settings.language = 'en'; await service.save(settings); const restored = await service.get(); expect(restored.theme).toBe('dark'); expect(restored.language).toBe('en')
   })
   it('merkezi tema tokenlarını açık/koyu temada tanımlar', async () => {
     const css = await readFile(path.resolve('src/renderer/src/styles.css'), 'utf8')
@@ -36,5 +36,11 @@ describe('settings, theme and startup', () => {
     settings.quickCreatePresets.push({ id: 'public-web', name: 'Public Web', description: 'Public GitHub projesi', categoryId: 'web', createGithubRepo: true, githubVisibility: 'public', initGit: true, includeLogos: true, openInEditor: true, copyPrompt: true })
     await service.save(settings); const restored = await service.get()
     expect(restored.quickCreatePresets[0]).toMatchObject({ name: 'Public Web', categoryId: 'web', createGithubRepo: true, githubVisibility: 'public' })
+  })
+  it('kategori seçimini oluşturma anına bırakan senaryoyu kabul eder', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'kaiwen-flex-preset-')); roots.push(root)
+    const service = new SettingsService(path.join(root, 'settings.json'), root); const settings = await service.get()
+    settings.quickCreatePresets.push({ id: 'ask-category', name: 'Kategori Sor', description: '', categoryId: null, createGithubRepo: false, githubVisibility: 'private', initGit: false, includeLogos: false, openInEditor: true, copyPrompt: true })
+    await expect(service.save(settings)).resolves.toMatchObject({ quickCreatePresets: [{ categoryId: null }] })
   })
 })

@@ -85,6 +85,19 @@ Public seçiminde özel Markdown belgeleri ve logolar da görünür olur. Basit 
 
 GitHub kapalıyken oluşturma tamamen çevrimdışı çalışır. Yerel `git init` bağımsız ve varsayılan olarak kapalıdır. Bu uygulama reposunun Git geçmişi ile üretilen her projenin Git geçmişi birbirinden bağımsızdır.
 
+## Sürüm ve otomatik güncelleme
+
+Uygulama `electron-updater` ile GitHub Releases kanalını denetler. Yeni sürüm bulunduğunda sidebar'da modern indirme simgesi görünür; indirme yüzdesi aynı alanda izlenir. İndirme tamamlanınca **Kur ve yeniden başlat** eylemi uygulamayı kapatıp NSIS kurulumunu başlatır. İndirme sırasında ana pencere kapatılırsa uygulama sistem tepsisinde çalışmayı sürdürür; tepsi menüsünden tekrar gösterilebilir.
+
+Sürüm yayınlamak için önce `package.json` sürümünü artırın, commit'i gönderin ve aynı sürümle etiket oluşturun:
+
+```powershell
+git tag v0.2.0
+git push origin main --tags
+```
+
+`Release` workflow'u `v*` etiketini `package.json` ile doğrular; lint, typecheck ve testler başarılıysa Windows installer, blockmap ve `latest.yml` dosyalarını GitHub Release'e yayınlar. Sıradan branch push'ları production güncellemesi yayınlamaz. Kod imzalama sertifikası ayarlanmadıysa installer imzasızdır ve SmartScreen uyarısı gösterebilir.
+
 ## Mimari ve güvenlik
 
 Detaylar [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), geliştirme akışı [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) dosyasındadır. Uygulama telemetry, analytics, hesap sunucusu veya veritabanı kullanmaz. Ayarlar ve katalog Electron `userData` altında atomik JSON olarak tutulur; bozuk dosya kurtarma kopyasına çevrilip güvenli varsayılan oluşturulur.
@@ -96,4 +109,4 @@ Detaylar [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), geliştirme akışı [doc
 - Windows installer varsayılan olarak imzasızdır.
 - Gerçek GitHub entegrasyon testleri repo oluşturmaz; CLI adapter'ı test doubles ile doğrulanır.
 
-CI sonuçları GitHub Actions içindeki **CI** iş akışında; manuel installer çıktıları **Release** iş akışında görülür.
+CI sonuçları GitHub Actions içindeki **CI** iş akışında; sürüm etiketi çıktıları **Release** iş akışında görülür.

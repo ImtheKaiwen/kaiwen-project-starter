@@ -1,4 +1,5 @@
 export type Theme = 'system' | 'light' | 'dark'
+export type Language = 'tr' | 'en'
 export type GitHubVisibility = 'private' | 'public'
 export type EditorWindowMode = 'new' | 'reuse'
 
@@ -14,7 +15,7 @@ export interface QuickCreatePreset {
   id: string
   name: string
   description: string
-  categoryId: string
+  categoryId: string | null
   createGithubRepo: boolean
   githubVisibility: GitHubVisibility
   initGit: boolean
@@ -29,6 +30,7 @@ export interface AppSettings {
   brandingRoot: string
   templatesRoot: string
   theme: Theme
+  language: Language
   reducedMotion: boolean
   startAtLogin: boolean
   editorPath: string
@@ -109,6 +111,13 @@ export interface GithubStatus {
   message: string
 }
 
+export interface UpdateState {
+  status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
+  version?: string
+  percent?: number
+  message?: string
+}
+
 export interface OperationRecord {
   id: string
   state: 'VALIDATING' | 'CREATING_REMOTE' | 'CREATING_LOCAL' | 'INITIAL_COMMIT' | 'PUSHING' | 'COMPLETED' | 'REMOTE_FAILED' | 'LOCAL_FAILED_AFTER_REMOTE' | 'PUSH_FAILED'
@@ -142,6 +151,10 @@ export interface KaiwenApi {
   githubLogin(): Promise<Result<void>>
   setTheme(theme: Theme): Promise<Result<void>>
   getStartupStatus(): Promise<Result<boolean>>
+  checkForUpdates(): Promise<Result<UpdateState>>
+  downloadUpdate(): Promise<Result<void>>
+  installUpdate(): Promise<Result<void>>
+  onUpdateState(callback: (state: UpdateState) => void): () => void
 }
 
 export const IPC = {
@@ -150,5 +163,6 @@ export const IPC = {
   listTemplates: 'templates:list', readTemplate: 'templates:read', saveTemplate: 'templates:save',
   refreshProjects: 'projects:refresh', addManualProject: 'projects:add', removeProject: 'projects:remove',
   openProject: 'projects:open', createProject: 'projects:create', githubStatus: 'github:status',
-  githubLogin: 'github:login', setTheme: 'theme:set', getStartupStatus: 'startup:get'
+  githubLogin: 'github:login', setTheme: 'theme:set', getStartupStatus: 'startup:get',
+  checkForUpdates: 'updates:check', downloadUpdate: 'updates:download', installUpdate: 'updates:install', updateState: 'updates:state'
 } as const

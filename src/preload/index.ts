@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AppSettings, CreateProjectRequest, KaiwenApi, Theme } from '../shared/contracts'
+import type { AppSettings, CreateProjectRequest, KaiwenApi, Theme, UpdateState } from '../shared/contracts'
 import { IPC } from '../shared/contracts'
 
 const api: KaiwenApi = {
@@ -11,6 +11,8 @@ const api: KaiwenApi = {
   addManualProject: () => ipcRenderer.invoke(IPC.addManualProject), removeProject: (id: string) => ipcRenderer.invoke(IPC.removeProject, id),
   openProject: (id: string) => ipcRenderer.invoke(IPC.openProject, id), createProject: (request: CreateProjectRequest) => ipcRenderer.invoke(IPC.createProject, request),
   githubStatus: () => ipcRenderer.invoke(IPC.githubStatus), githubLogin: () => ipcRenderer.invoke(IPC.githubLogin), setTheme: (theme: Theme) => ipcRenderer.invoke(IPC.setTheme, theme),
-  getStartupStatus: () => ipcRenderer.invoke(IPC.getStartupStatus)
+  getStartupStatus: () => ipcRenderer.invoke(IPC.getStartupStatus), checkForUpdates: () => ipcRenderer.invoke(IPC.checkForUpdates),
+  downloadUpdate: () => ipcRenderer.invoke(IPC.downloadUpdate), installUpdate: () => ipcRenderer.invoke(IPC.installUpdate),
+  onUpdateState: (callback: (state: UpdateState) => void) => { const listener = (_event: Electron.IpcRendererEvent, state: UpdateState) => callback(state); ipcRenderer.on(IPC.updateState, listener); return () => ipcRenderer.removeListener(IPC.updateState, listener) }
 }
 contextBridge.exposeInMainWorld('kaiwen', api)

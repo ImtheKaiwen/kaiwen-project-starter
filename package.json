@@ -1,8 +1,12 @@
 {
   "name": "kaiwen-project-starter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Kaiwen çalışma alanı için hızlı proje başlatıcı ve güvenli proje oluşturucu",
   "author": "Kaiwen",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ImtheKaiwen/kaiwen-project-starter.git"
+  },
   "main": "out/main/index.js",
   "type": "module",
   "private": true,
@@ -17,10 +21,13 @@
     "dist:win": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
+    "i18next": "^26.5.6",
     "lucide-react": "^1.61.0",
     "marked": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-i18next": "^17.1.3",
     "sanitize-html": "^2.17.0"
   },
   "devDependencies": {
@@ -68,6 +75,14 @@
       "icon": "resources/branding/logos/kaiwen-logo-transparent.png",
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "ImtheKaiwen",
+        "repo": "kaiwen-project-starter",
+        "releaseType": "release"
+      }
+    ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
