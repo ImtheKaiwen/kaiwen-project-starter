@@ -5,16 +5,16 @@ import { MarkdownEditor } from '../components/MarkdownEditor'
 import { Icon } from '../components/Icon'
 import { SelectControl } from '../components/SelectControl'
 
-interface Props { settings: AppSettings; logos: LogoDescriptor[]; onBack(): void; onCreated(message: string): void }
-type CreateMode = 'quick' | 'advanced'
-export function CreateView({ settings, logos, onBack, onCreated }: Props) {
+interface Props { settings: AppSettings; logos: LogoDescriptor[]; presetId: string | undefined; onBack(): void; onCreated(message: string): void }
+export function CreateView({ settings, logos, presetId, onBack, onCreated }: Props) {
   const categories = settings.categories.filter((item) => item.enabled)
-  const [name, setName] = useState(''); const [categoryId, setCategoryId] = useState(categories[0]?.id ?? '')
+  const preset = settings.quickCreatePresets.find((item) => item.id === presetId)
+  const [name, setName] = useState(''); const [categoryId, setCategoryId] = useState(preset?.categoryId ?? categories[0]?.id ?? '')
   const [templates, setTemplates] = useState<TemplateDescriptor[]>([]); const [custom, setCustom] = useState<CustomMarkdown[]>([])
-  const [includeLogos, setIncludeLogos] = useState(settings.defaults.includeLogos); const [github, setGithub] = useState(settings.defaults.createGithubRepo)
-  const [visibility, setVisibility] = useState(settings.defaults.githubVisibility); const [initGit, setInitGit] = useState(settings.defaults.initGit)
-  const [openEditor, setOpenEditor] = useState(settings.defaults.openInEditor); const [copyPrompt, setCopyPrompt] = useState(settings.defaults.copyPrompt)
-  const [mode, setMode] = useState<CreateMode>(settings.defaults.quickCreate ? 'quick' : 'advanced'); const [step, setStep] = useState(0)
+  const [includeLogos, setIncludeLogos] = useState(preset?.includeLogos ?? settings.defaults.includeLogos); const [github, setGithub] = useState(preset?.createGithubRepo ?? settings.defaults.createGithubRepo)
+  const [visibility, setVisibility] = useState(preset?.githubVisibility ?? settings.defaults.githubVisibility); const [initGit, setInitGit] = useState(preset?.initGit ?? settings.defaults.initGit)
+  const [openEditor, setOpenEditor] = useState(preset?.openInEditor ?? settings.defaults.openInEditor); const [copyPrompt, setCopyPrompt] = useState(preset?.copyPrompt ?? settings.defaults.copyPrompt)
+  const [step, setStep] = useState(0)
   const [editing, setEditing] = useState<{ kind: 'template' | 'custom'; index: number; content: string } | null>(null)
   const [busy, setBusy] = useState(false); const [error, setError] = useState('')
   useEffect(() => { void window.kaiwen.listTemplates(categoryId).then((result) => result.ok ? setTemplates(result.value) : setError(result.error)) }, [categoryId])
@@ -25,21 +25,20 @@ export function CreateView({ settings, logos, onBack, onCreated }: Props) {
   const submit = async () => {
     setError(''); if (!slug) { setError('Geçerli bir proje adı girin.'); return }
     setBusy(true)
-    const request: CreateProjectRequest = { name, categoryId, templates: mode === 'quick' ? [] : templates, customMarkdown: custom, includeLogos: mode === 'quick' ? settings.defaults.includeLogos : includeLogos, createGithubRepo: mode === 'quick' ? false : github, githubVisibility: visibility, initGit: mode === 'quick' ? settings.defaults.initGit : github ? true : initGit, openInEditor: openEditor, copyPrompt }
+    const request: CreateProjectRequest = { name, categoryId, templates: preset ? [] : templates, customMarkdown: custom, includeLogos, createGithubRepo: github, githubVisibility: visibility, initGit: github ? true : initGit, openInEditor: openEditor, copyPrompt }
     const result = await window.kaiwen.createProject(request); setBusy(false)
     if (!result.ok) { setError(result.error); return }
     const suffix = result.value.githubUrl ? ` GitHub: ${result.value.githubUrl}` : ''
     onCreated(`“${result.value.project.name}” oluşturuldu.${suffix}${result.value.warnings.length ? ` Uyarı: ${result.value.warnings.join(' ')}` : ''}`)
   }
   const addMarkdown = () => { const index = custom.length; const content = '# Yeni Belge\n'; setCustom((items) => [...items, { name: `OZEL-${index + 1}.md`, content }]); setEditing({ kind: 'custom', index, content }) }
-  const primaryAction = () => { if (mode === 'advanced' && step < 2) { setStep((value) => value + 1); return } void submit() }
-  const primaryLabel = busy ? 'Oluşturuluyor…' : mode === 'advanced' && step < 2 ? 'Devam' : mode === 'quick' ? 'Hızlı oluştur' : 'Proje oluştur'
+  const primaryAction = () => { if (!preset && step < 2) { setStep((value) => value + 1); return } void submit() }
+  const primaryLabel = busy ? 'Oluşturuluyor…' : !preset && step < 2 ? 'Devam' : 'Proje oluştur'
   return <main className="create-page">
-    <header className="create-header"><div className="create-header__title"><button className="icon-button" onClick={onBack} aria-label="Projelere dön"><Icon name="back" size={17} /></button><h1>Yeni proje</h1></div><button className="button button--primary" onClick={primaryAction} disabled={busy || !slug}>{primaryLabel} <Icon name="arrow" size={15} /></button></header>
-    <nav className="create-mode-tabs" aria-label="Oluşturma modu"><button className={mode === 'quick' ? 'is-active' : ''} onClick={() => setMode('quick')}>Hızlı oluştur</button><button className={mode === 'advanced' ? 'is-active' : ''} onClick={() => setMode('advanced')}>Gelişmiş</button></nav>
+    <header className="create-header"><div className="create-header__title"><button className="icon-button" onClick={onBack} aria-label="Projelere dön"><Icon name="back" size={17} /></button><h1>{preset?.name ?? 'Yeni proje'}</h1></div><button className="button button--primary" onClick={primaryAction} disabled={busy || !slug}>{primaryLabel} <Icon name="arrow" size={15} /></button></header>
     <div className="create-content">
-      {mode === 'quick' ? <section className="quick-create">
-        <div className="quick-create__intro"><h2>Yeni proje</h2><p>Bir ad verin. İsterseniz projeye özel bir Markdown belgesi ekleyin.</p></div>
+      {preset ? <section className="quick-create">
+        <div className="quick-create__intro"><h2>{preset.name}</h2><p>{preset.description || 'Proje adını girin ve isterseniz özel bir Markdown belgesi ekleyin.'}</p><div className="preset-summary"><span>{preset.categoryId}</span>{preset.createGithubRepo && <span>{preset.githubVisibility === 'public' ? 'Public GitHub' : 'Private GitHub'}</span>}{preset.includeLogos && <span>Logolar</span>}{preset.openInEditor && <span>Editörde aç</span>}</div></div>
         <label className="field"><span>Proje adı</span><input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Örn. Kaiwen Notes" /><small>Klasör: <strong>{slug || '—'}</strong></small></label>
         <div className="target-preview"><span>Hedef klasör</span><code>{destination}</code></div>
         <div className="quick-markdown"><div><strong>Markdown belgesi</strong><small>İsteğe bağlı</small></div><div className="inline-actions"><button className="button button--ghost" onClick={() => void importMarkdown()}>Dosya seç</button><button className="button button--ghost" onClick={addMarkdown}>Yeni Markdown</button></div></div>

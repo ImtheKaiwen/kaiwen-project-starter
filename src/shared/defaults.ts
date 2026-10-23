@@ -19,7 +19,8 @@ export function defaultSettings(workspaceRoot = ''): AppSettings {
     brandingRoot: workspaceRoot ? `${workspaceRoot}/branding/logos` : '',
     templatesRoot: workspaceRoot ? `${workspaceRoot}/templates` : '',
     theme: 'system', reducedMotion: false, startAtLogin: false, editorPath: 'code', editorWindowMode: 'new', githubOwner: '',
-    defaults: { openInEditor: true, copyPrompt: true, createGithubRepo: false, githubVisibility: 'private', initGit: false, includeLogos: false, quickCreate: false },
+    quickCreatePresets: [],
+    defaults: { openInEditor: true, copyPrompt: true, createGithubRepo: false, githubVisibility: 'private', initGit: false, includeLogos: false },
     categories: DEFAULT_CATEGORIES.map((category) => ({ ...category }))
   }
 }

@@ -10,6 +10,19 @@ export interface Category {
   enabled: boolean
 }
 
+export interface QuickCreatePreset {
+  id: string
+  name: string
+  description: string
+  categoryId: string
+  createGithubRepo: boolean
+  githubVisibility: GitHubVisibility
+  initGit: boolean
+  includeLogos: boolean
+  openInEditor: boolean
+  copyPrompt: boolean
+}
+
 export interface AppSettings {
   version: 1
   workspaceRoot: string
@@ -21,6 +34,7 @@ export interface AppSettings {
   editorPath: string
   editorWindowMode: EditorWindowMode
   githubOwner: string
+  quickCreatePresets: QuickCreatePreset[]
   defaults: {
     openInEditor: boolean
     copyPrompt: boolean
@@ -28,7 +42,6 @@ export interface AppSettings {
     githubVisibility: GitHubVisibility
     initGit: boolean
     includeLogos: boolean
-    quickCreate: boolean
   }
   categories: Category[]
 }

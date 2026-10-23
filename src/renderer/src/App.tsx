@@ -12,6 +12,7 @@ export function App() {
   const [view, setView] = useState<View>('home'); const [settings, setSettings] = useState<AppSettings | null>(null)
   const [projects, setProjects] = useState<ProjectRecord[]>([]); const [logos, setLogos] = useState<LogoDescriptor[]>([])
   const [error, setError] = useState(''); const [notice, setNotice] = useState('')
+  const [createPresetId, setCreatePresetId] = useState<string | undefined>()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   useEffect(() => {
@@ -32,7 +33,7 @@ export function App() {
     const closeSidebar = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setSidebarOpen(false)
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setSearchOpen(true) }
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n') { event.preventDefault(); setView('create'); setSearchOpen(false) }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n') { event.preventDefault(); setCreatePresetId(undefined); setView('create'); setSearchOpen(false) }
     }
     window.addEventListener('keydown', closeSidebar); return () => window.removeEventListener('keydown', closeSidebar)
   }, [])
@@ -41,10 +42,11 @@ export function App() {
   if (error && !settings) return <div className="fatal"><Logo /><h1>Uygulama başlatılamadı</h1><p>{error}</p></div>
   if (!settings) return null
   const changeTheme = (theme: AppSettings['theme']) => { const value = { ...settings, theme }; setSettings(value); void window.kaiwen.setTheme(theme); void window.kaiwen.saveSettings(value).then((result) => { if (result.ok) setSettings(result.value); else setError(result.error) }) }
-  return <><Sidebar open={sidebarOpen} active={view} projectCount={projects.length} theme={settings.theme} onClose={() => setSidebarOpen(false)} onToggle={() => setSidebarOpen((value) => !value)} onSearch={() => setSearchOpen(true)} onNavigate={setView} onTheme={changeTheme} />
+  const startCreate = (presetId?: string) => { setCreatePresetId(presetId); setView('create') }
+  return <><Sidebar open={sidebarOpen} active={view} projectCount={projects.length} theme={settings.theme} onClose={() => setSidebarOpen(false)} onToggle={() => setSidebarOpen((value) => !value)} onSearch={() => setSearchOpen(true)} onNavigate={(next) => { if (next === 'create') setCreatePresetId(undefined); setView(next) }} onTheme={changeTheme} />
     <div className="app-main">
-      {view === 'home' && <HomeView projects={projects} onOpen={open} onCreate={() => setView('create')} onSearch={() => setSearchOpen(true)} />}
-      {view === 'create' && <CreateView settings={settings} logos={logos} onBack={() => setView('home')} onCreated={(message) => { setNotice(message); void window.kaiwen.bootstrap().then((result) => { if (result.ok) { setProjects(result.value.projects); setLogos(result.value.logos) } }); setView('home') }} />}
+      {view === 'home' && <HomeView projects={projects} presets={settings.quickCreatePresets} onOpen={open} onCreate={startCreate} onSearch={() => setSearchOpen(true)} />}
+      {view === 'create' && <CreateView settings={settings} logos={logos} presetId={createPresetId} onBack={() => { setCreatePresetId(undefined); setView('home') }} onCreated={(message) => { setNotice(message); setCreatePresetId(undefined); void window.kaiwen.bootstrap().then((result) => { if (result.ok) { setProjects(result.value.projects); setLogos(result.value.logos) } }); setView('home') }} />}
       {view === 'settings' && <SettingsView initial={settings} projects={projects} onSaved={(value) => setSettings(value)} onProjects={setProjects} />}
     </div>
     <SearchPalette open={searchOpen} projects={projects} onClose={() => setSearchOpen(false)} onOpen={open} onNavigate={setView} />

@@ -123,6 +123,7 @@ function assertSettings(value: unknown): asserts value is AppSettings {
   if (!value || typeof value !== 'object') throw new Error('Geçersiz ayarlar.')
   const settings = value as AppSettings
   if (!Array.isArray(settings.categories) || settings.categories.length > 100) throw new Error('Geçersiz kategori listesi.')
+  if (!Array.isArray(settings.quickCreatePresets) || settings.quickCreatePresets.length > 50) throw new Error('Geçersiz hızlı oluşturma senaryoları.')
   settings.categories.forEach((item) => validateRelativeDirectory(item.relativePath))
 }
 function assertCreateRequest(value: unknown): asserts value is CreateProjectRequest {

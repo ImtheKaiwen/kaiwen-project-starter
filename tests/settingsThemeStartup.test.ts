@@ -13,7 +13,7 @@ describe('settings, theme and startup', () => {
   it('varsayılan tema sistem, startup ve GitHub kapalıdır; ayarlar atomik okunur', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'kaiwen-settings-')); roots.push(root)
     const service = new SettingsService(path.join(root, 'data', 'settings.json'), root)
-    const settings = await service.get(); expect(settings.theme).toBe('system'); expect(settings.startAtLogin).toBe(false); expect(settings.defaults.createGithubRepo).toBe(false); expect(settings.defaults.quickCreate).toBe(false)
+    const settings = await service.get(); expect(settings.theme).toBe('system'); expect(settings.startAtLogin).toBe(false); expect(settings.defaults.createGithubRepo).toBe(false); expect(settings.quickCreatePresets).toEqual([])
     settings.theme = 'dark'; await service.save(settings); expect((await service.get()).theme).toBe('dark')
   })
   it('merkezi tema tokenlarını açık/koyu temada tanımlar', async () => {
@@ -29,5 +29,12 @@ describe('settings, theme and startup', () => {
   })
   it('kategori eşlemeleri kararlı kimlik ve beklenen yolları taşır', () => {
     const settings = defaultSettings('C:/Kaiwen'); expect(settings.categories.find((item) => item.id === 'library')?.relativePath).toBe('packages'); expect(settings.categories.find((item) => item.id === 'ai-speech')?.templateProfile).toBe('ai-speech')
+  })
+  it('hızlı oluşturma senaryolarını seçenekleriyle saklar', async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'kaiwen-presets-')); roots.push(root)
+    const service = new SettingsService(path.join(root, 'settings.json'), root); const settings = await service.get()
+    settings.quickCreatePresets.push({ id: 'public-web', name: 'Public Web', description: 'Public GitHub projesi', categoryId: 'web', createGithubRepo: true, githubVisibility: 'public', initGit: true, includeLogos: true, openInEditor: true, copyPrompt: true })
+    await service.save(settings); const restored = await service.get()
+    expect(restored.quickCreatePresets[0]).toMatchObject({ name: 'Public Web', categoryId: 'web', createGithubRepo: true, githubVisibility: 'public' })
   })
 })
