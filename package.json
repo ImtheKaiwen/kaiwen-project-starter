@@ -73,7 +73,7 @@
         "nsis"
       ],
       "icon": "resources/branding/logos/kaiwen-logo-transparent.png",
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "Kaiwen-Project-Starter-${version}-${arch}.${ext}"
     },
     "publish": [
       {
