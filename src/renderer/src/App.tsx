@@ -40,9 +40,9 @@ export function App() {
   const changeTheme = (theme: AppSettings['theme']) => { const value = { ...settings, theme }; setSettings(value); void window.kaiwen.setTheme(theme); void window.kaiwen.saveSettings(value).then((result) => { if (result.ok) setSettings(result.value); else setError(result.error) }) }
   return <><Sidebar open={sidebarOpen} active={view} projectCount={projects.length} theme={settings.theme} onClose={() => setSidebarOpen(false)} onToggle={() => setSidebarOpen((value) => !value)} onSearch={() => setSearchOpen(true)} onNavigate={setView} onTheme={changeTheme} />
     <div className="app-main">
-      {view === 'home' && <HomeView projects={projects} onOpen={open} onCreate={() => setView('create')} onSettings={() => setView('settings')} onSearch={() => setSearchOpen(true)} />}
+      {view === 'home' && <HomeView projects={projects} onOpen={open} onCreate={() => setView('create')} onSearch={() => setSearchOpen(true)} />}
       {view === 'create' && <CreateView settings={settings} logos={logos} onBack={() => setView('home')} onCreated={(message) => { setNotice(message); void window.kaiwen.bootstrap().then((result) => { if (result.ok) { setProjects(result.value.projects); setLogos(result.value.logos) } }); setView('home') }} />}
-      {view === 'settings' && <SettingsView initial={settings} projects={projects} onBack={() => setView('home')} onSaved={(value) => setSettings(value)} onProjects={setProjects} />}
+      {view === 'settings' && <SettingsView initial={settings} projects={projects} onSaved={(value) => setSettings(value)} onProjects={setProjects} />}
     </div>
     <SearchPalette open={searchOpen} projects={projects} onClose={() => setSearchOpen(false)} onOpen={open} onNavigate={setView} />
     {(error || notice) && <div className={`toast ${error ? 'toast--error' : ''}`} role="status"><span>{error || notice}</span><button onClick={() => { setError(''); setNotice('') }}>×</button></div>}</>

@@ -17,6 +17,7 @@
     "dist:win": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
+    "lucide-react": "^1.61.0",
     "marked": "^16.4.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -26,11 +27,11 @@
     "@eslint/js": "^9.38.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
-    "@vitejs/plugin-react": "latest",
     "@types/node": "^24.9.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/sanitize-html": "^2.16.0",
+    "@vitejs/plugin-react": "latest",
     "electron": "^45.0.0",
     "electron-builder": "^26.0.12",
     "electron-vite": "^6.0.0",
@@ -47,11 +48,32 @@
     "appId": "com.kaiwen.projectstarter",
     "productName": "Kaiwen Project Starter",
     "asar": true,
-    "directories": { "output": "release" },
-    "files": ["out/**/*", "package.json"],
-    "extraResources": [{ "from": "resources/branding", "to": "branding" }],
-    "win": { "target": ["nsis"], "icon": "resources/branding/logos/kaiwen-logo-transparent.png", "artifactName": "${productName}-${version}-${arch}.${ext}" },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/branding",
+        "to": "branding"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "resources/branding/logos/kaiwen-logo-transparent.png",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
-  "engines": { "node": ">=22.12.0" }
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

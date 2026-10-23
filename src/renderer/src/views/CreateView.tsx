@@ -3,6 +3,7 @@ import type { AppSettings, CreateProjectRequest, CustomMarkdown, LogoDescriptor,
 import { slugifyProjectName } from '../../../shared/pathSafety'
 import { MarkdownEditor } from '../components/MarkdownEditor'
 import { Icon } from '../components/Icon'
+import { SelectControl } from '../components/SelectControl'
 
 interface Props { settings: AppSettings; logos: LogoDescriptor[]; onBack(): void; onCreated(message: string): void }
 export function CreateView({ settings, logos, onBack, onCreated }: Props) {
@@ -31,7 +32,7 @@ export function CreateView({ settings, logos, onBack, onCreated }: Props) {
   return <main className="page-shell"><header className="page-header"><button className="back-button" onClick={onBack}><Icon name="back" size={16} /> Geri</button><div><p className="eyebrow">YENİ PROJE</p><h1>Temiz bir başlangıç.</h1></div><div /></header>
     <section className="form-card">
       <div className="field-grid"><label className="field"><span>Proje adı</span><input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Örn. Kaiwen Notes" /><small>Repo ve klasör: <strong>{slug || '—'}</strong></small></label>
-        <label className="field"><span>Proje türü</span><select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>{categories.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label></div>
+        <label className="field"><span>Proje türü</span><SelectControl ariaLabel="Proje türü" value={categoryId} onChange={setCategoryId} options={categories.map((item) => ({ value: item.id, label: item.name, description: item.relativePath }))} /></label></div>
       <div className="target-preview"><span>Hedef klasör</span><code>{destination}</code></div>
       <button className="disclosure" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}><span>Proje belgeleri <small>{templates.filter((item) => item.selected).length + custom.length} seçili</small></span><span>{expanded ? '−' : '+'}</span></button>
       {expanded && <div className="document-panel">

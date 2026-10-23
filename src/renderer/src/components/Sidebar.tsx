@@ -1,13 +1,12 @@
 import type { Theme } from '../../../shared/contracts'
 import { Icon } from './Icon'
-import { Logo } from './Logo'
 
 interface Props { open: boolean; active: 'home' | 'create' | 'settings'; projectCount: number; theme: Theme; onClose(): void; onToggle(): void; onSearch(): void; onNavigate(view: 'home' | 'create' | 'settings'): void; onTheme(theme: Theme): void }
 export function Sidebar({ open, active, projectCount, theme, onClose, onToggle, onSearch, onNavigate, onTheme }: Props) {
   const go = (view: 'home' | 'create' | 'settings') => { onNavigate(view); onClose() }
   return <><button className={`sidebar-scrim ${open ? 'is-open' : ''}`} aria-label="Menüyü kapat" tabIndex={open ? 0 : -1} onClick={onClose} />
     <aside className={`sidebar ${open ? 'is-open' : ''}`}>
-      <header><button className="rail-logo" onClick={onToggle} aria-label={open ? 'Menüyü daralt' : 'Menüyü genişlet'}><Logo compact /></button>{open && <strong>Kaiwen</strong>}</header>
+      <header><button className="rail-toggle" onClick={onToggle} aria-label={open ? 'Menüyü daralt' : 'Menüyü genişlet'}><Icon name={open ? 'panelClose' : 'panelOpen'} size={20} /></button>{open && <strong>Kaiwen</strong>}</header>
       <nav aria-label="Ana menü">
         <button title="Ara" onClick={onSearch}><Icon name="search" /><span>Ara</span><small>⌘K</small></button>
         <button title="Projeler" className={active === 'home' ? 'is-active' : ''} onClick={() => go('home')}><Icon name="home" /><span>Projeler</span><small>{projectCount}</small></button>
