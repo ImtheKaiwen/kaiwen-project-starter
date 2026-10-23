@@ -14,12 +14,15 @@ export function App() {
   const [error, setError] = useState(''); const [notice, setNotice] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  useEffect(() => { void window.kaiwen.bootstrap().then((result) => {
-    if (result.ok) {
-      setSettings(result.value.settings); setProjects(result.value.projects); setLogos(result.value.logos)
-      window.setTimeout(() => { void window.kaiwen.refreshProjects().then((refresh) => { if (refresh.ok) setProjects(refresh.value) }) }, 250)
-    } else setError(result.error)
-  }) }, [])
+  useEffect(() => {
+    const minimumSplash = new Promise<void>((resolve) => window.setTimeout(resolve, 1100))
+    void Promise.all([window.kaiwen.bootstrap(), minimumSplash]).then(([result]) => {
+      if (result.ok) {
+        setSettings(result.value.settings); setProjects(result.value.projects); setLogos(result.value.logos)
+        window.setTimeout(() => { void window.kaiwen.refreshProjects().then((refresh) => { if (refresh.ok) setProjects(refresh.value) }) }, 250)
+      } else setError(result.error)
+    })
+  }, [])
   useEffect(() => {
     if (!settings) return
     document.documentElement.dataset.theme = settings.theme
