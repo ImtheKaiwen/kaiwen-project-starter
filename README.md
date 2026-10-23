@@ -37,7 +37,7 @@ npm run build
 npm run dist:win
 ```
 
-`dist:win`, `release/` altında NSIS kurulumu üretir. Kod imzalama sertifikası yapılandırılmadığı sürece çıktı imzasızdır; Windows SmartScreen uyarı gösterebilir. Bu uyarı imzalı yayın iddiasıyla gizlenmez.
+`dist:win`, `release/` altında NSIS kurulumu üretir ve CI ortamında da kendiliğinden yayın yapmaz. Kod imzalama sertifikası yapılandırılmadığı sürece çıktı imzasızdır; Windows SmartScreen uyarı gösterebilir. Bu uyarı imzalı yayın iddiasıyla gizlenmez.
 
 ## İlk kullanım
 
