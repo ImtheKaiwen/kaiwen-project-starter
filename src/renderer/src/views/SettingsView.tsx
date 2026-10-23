@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { AppSettings, GithubStatus, ProjectRecord, TemplateDescriptor } from '../../../shared/contracts'
 import { MarkdownEditor } from '../components/MarkdownEditor'
+import { Icon } from '../components/Icon'
 
-interface Props { initial: AppSettings; projects: ProjectRecord[]; onBack(): void; onSaved(settings: AppSettings): void; onProjects(projects: ProjectRecord[]): void }
-export function SettingsView({ initial, projects, onBack, onSaved, onProjects }: Props) {
+interface Props { initial: AppSettings; projects: ProjectRecord[]; onBack(): void; onMenu(): void; onSaved(settings: AppSettings): void; onProjects(projects: ProjectRecord[]): void }
+export function SettingsView({ initial, projects, onBack, onMenu, onSaved, onProjects }: Props) {
   const [settings, setSettings] = useState(() => structuredClone(initial)); const [status, setStatus] = useState<GithubStatus | null>(null)
   const [message, setMessage] = useState(''); const [busy, setBusy] = useState(false); const [templateCategory, setTemplateCategory] = useState(initial.categories[0]?.id ?? '')
   const [templates, setTemplates] = useState<TemplateDescriptor[]>([]); const [editing, setEditing] = useState<{ item: TemplateDescriptor; content: string } | null>(null)
@@ -19,7 +20,7 @@ export function SettingsView({ initial, projects, onBack, onSaved, onProjects }:
   const refresh = async () => { setBusy(true); const result = await window.kaiwen.refreshProjects(); setBusy(false); if (result.ok) { onProjects(result.value); setMessage(`${result.value.length} proje katalogda.`) } else setMessage(result.error) }
   const manual = async () => { const result = await window.kaiwen.addManualProject(); if (!result.ok) setMessage(result.error); else if (result.value) { onProjects([...projects.filter((item) => item.id !== result.value!.id), result.value]); setMessage('Proje kataloğa eklendi.') } }
   const editTemplate = async (item: TemplateDescriptor) => { const result = await window.kaiwen.readTemplate(item.sourcePath); if (result.ok) setEditing({ item, content: result.value }); else setMessage(result.error) }
-  return <main className="page-shell settings-page"><header className="page-header"><button className="back-button" onClick={onBack}>← Geri</button><div><p className="eyebrow">AYARLAR</p><h1>Az seçenek, doğru kontrol.</h1></div><button className="button button--primary" disabled={busy} onClick={() => void save()}>{busy ? 'Bekleyin…' : 'Kaydet'}</button></header>
+  return <main className="page-shell settings-page"><header className="page-header"><div className="page-header__leading"><button className="icon-button" onClick={onMenu} aria-label="Menüyü aç"><Icon name="menu" /></button><button className="back-button" onClick={onBack}>← Geri</button></div><div><p className="eyebrow">AYARLAR</p><h1>Az seçenek, doğru kontrol.</h1></div><button className="button button--primary" disabled={busy} onClick={() => void save()}>{busy ? 'Bekleyin…' : 'Kaydet'}</button></header>
     <div className="settings-stack">
       <SettingsSection title="Çalışma alanı" description="Kaynak şablonlar ve yeni projeler bu köke göre bulunur.">
         <PathRow label="Kaiwen kökü" value={settings.workspaceRoot} onChoose={() => void choose('workspace')} />
