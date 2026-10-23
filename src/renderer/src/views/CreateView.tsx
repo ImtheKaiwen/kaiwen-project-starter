@@ -4,8 +4,8 @@ import { slugifyProjectName } from '../../../shared/pathSafety'
 import { MarkdownEditor } from '../components/MarkdownEditor'
 import { Icon } from '../components/Icon'
 
-interface Props { settings: AppSettings; logos: LogoDescriptor[]; onBack(): void; onMenu(): void; onCreated(message: string): void }
-export function CreateView({ settings, logos, onBack, onMenu, onCreated }: Props) {
+interface Props { settings: AppSettings; logos: LogoDescriptor[]; onBack(): void; onCreated(message: string): void }
+export function CreateView({ settings, logos, onBack, onCreated }: Props) {
   const categories = settings.categories.filter((item) => item.enabled)
   const [name, setName] = useState(''); const [categoryId, setCategoryId] = useState(categories[0]?.id ?? '')
   const [templates, setTemplates] = useState<TemplateDescriptor[]>([]); const [custom, setCustom] = useState<CustomMarkdown[]>([])
@@ -28,7 +28,7 @@ export function CreateView({ settings, logos, onBack, onMenu, onCreated }: Props
     const suffix = result.value.githubUrl ? ` GitHub: ${result.value.githubUrl}` : ''
     onCreated(`“${result.value.project.name}” oluşturuldu.${suffix}${result.value.warnings.length ? ` Uyarı: ${result.value.warnings.join(' ')}` : ''}`)
   }
-  return <main className="page-shell"><header className="page-header"><div className="page-header__leading"><button className="icon-button" onClick={onMenu} aria-label="Menüyü aç"><Icon name="menu" /></button><button className="back-button" onClick={onBack}>← Geri</button></div><div><p className="eyebrow">YENİ PROJE</p><h1>Temiz bir başlangıç.</h1></div><div /></header>
+  return <main className="page-shell"><header className="page-header"><button className="back-button" onClick={onBack}><Icon name="back" size={16} /> Geri</button><div><p className="eyebrow">YENİ PROJE</p><h1>Temiz bir başlangıç.</h1></div><div /></header>
     <section className="form-card">
       <div className="field-grid"><label className="field"><span>Proje adı</span><input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="Örn. Kaiwen Notes" /><small>Repo ve klasör: <strong>{slug || '—'}</strong></small></label>
         <label className="field"><span>Proje türü</span><select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>{categories.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label></div>

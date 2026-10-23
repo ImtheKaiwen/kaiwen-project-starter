@@ -1,4 +1,4 @@
-type IconName = 'menu' | 'settings' | 'search' | 'home' | 'plus' | 'folder' | 'close' | 'arrow'
+type IconName = 'menu' | 'settings' | 'search' | 'home' | 'plus' | 'folder' | 'close' | 'arrow' | 'back' | 'more'
 
 const paths: Record<IconName, React.ReactNode> = {
   menu: <><path d="M4 7h16M4 12h16M4 17h16" /></>,
@@ -8,7 +8,9 @@ const paths: Record<IconName, React.ReactNode> = {
   plus: <><path d="M12 5v14M5 12h14" /></>,
   folder: <><path d="M3 6.5h7l2 2h9v10.5H3Z" /></>,
   close: <><path d="m6 6 12 12M18 6 6 18" /></>,
-  arrow: <><path d="M5 12h14M13 6l6 6-6 6" /></>
+  arrow: <><path d="M5 12h14M13 6l6 6-6 6" /></>,
+  back: <><path d="M19 12H5M11 18l-6-6 6-6" /></>,
+  more: <><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none" /></>
 }
 
 export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {

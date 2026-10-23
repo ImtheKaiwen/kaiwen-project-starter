@@ -1,36 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ProjectRecord } from '../../../shared/contracts'
-import { searchProjects } from '../../../shared/search'
-import { Logo } from '../components/Logo'
 import { Icon } from '../components/Icon'
 
-interface Props { projects: ProjectRecord[]; onOpen(project: ProjectRecord): Promise<void>; onCreate(): void; onSettings(): void; onMenu(): void }
-export function HomeView({ projects, onOpen, onCreate, onSettings, onMenu }: Props) {
-  const [query, setQuery] = useState(''); const [active, setActive] = useState(0); const input = useRef<HTMLInputElement>(null)
-  const results = useMemo(() => searchProjects(projects, query).slice(0, query ? 20 : 6), [projects, query])
-  useEffect(() => { input.current?.focus() }, [])
-  useEffect(() => {
-    const listener = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); input.current?.focus() } }
-    window.addEventListener('keydown', listener); return () => window.removeEventListener('keydown', listener)
-  }, [])
-  const keyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'ArrowDown') { event.preventDefault(); setActive((value) => Math.min(value + 1, results.length - 1)) }
-    if (event.key === 'ArrowUp') { event.preventDefault(); setActive((value) => Math.max(value - 1, 0)) }
-    if (event.key === 'Escape') { setQuery(''); input.current?.focus() }
-    if (event.key === 'Enter' && results[active]) { event.preventDefault(); void onOpen(results[active]) }
-  }
+interface Props { projects: ProjectRecord[]; onOpen(project: ProjectRecord): Promise<void>; onCreate(): void; onSettings(): void; onSearch(): void }
+export function HomeView({ projects, onOpen, onCreate, onSettings, onSearch }: Props) {
+  const recents = [...projects].sort((a, b) => Date.parse(b.lastOpenedAt ?? '1970-01-01') - Date.parse(a.lastOpenedAt ?? '1970-01-01')).slice(0, 8)
   return <main className="home-shell">
-    <header className="topbar"><div className="topbar__group"><button className="icon-button" onClick={onMenu} aria-label="Menüyü aç"><Icon name="menu" /></button><Logo /></div><button className="icon-button" onClick={onSettings} aria-label="Ayarlar" title="Ayarlar"><Icon name="settings" /></button></header>
-    <section className="home-content">
-      <p className="eyebrow">PROJECT STARTER</p><h1>Bir sonraki fikrine kaldığın yerden başla.</h1>
-      <div className="search-box"><span><Icon name="search" size={21} /></span><input ref={input} value={query} onChange={(event) => { setQuery(event.target.value); setActive(0) }} onKeyDown={keyDown} placeholder="Proje ara…" aria-label="Proje ara" /><kbd>Ctrl K</kbd></div>
-      <div className="result-head"><span>{query ? 'Sonuçlar' : 'Son açılanlar'}</span><small>{results.length} proje</small></div>
-      <div className="project-list" role="listbox" aria-label="Projeler">
-        {results.length ? results.map((project, index) => <button key={project.id} className={`project-row ${index === active ? 'is-active' : ''}`} onMouseEnter={() => setActive(index)} onDoubleClick={() => void onOpen(project)} onClick={() => setActive(index)} role="option" aria-selected={index === active}>
-          <span className="project-icon">{project.name.slice(0, 1).toLocaleUpperCase('tr')}</span><span className="project-copy"><strong>{project.name}</strong><small>{project.path}</small></span>{project.missing ? <span className="status status--warn">Konum yok</span> : <span className="open-hint">Enter ↵</span>}
-        </button>) : <div className="empty"><strong>{query ? 'Eşleşen proje yok' : 'Henüz proje bulunamadı'}</strong><span>{query ? 'Başka bir ad veya klasör yolu deneyin.' : 'Yeni proje oluşturun ya da Ayarlar’dan mevcut projeleri tarayın.'}</span></div>}
+    <header className="workspace-header"><div><h1>Projeler</h1><p>Çalışma alanınızdaki projeler</p></div><div className="workspace-actions"><button className="icon-button" onClick={onSettings} aria-label="Ayarlar"><Icon name="settings" /></button><button className="button button--primary" onClick={onCreate}><Icon name="plus" size={16} /> Yeni proje</button></div></header>
+    <section className="dashboard-content">
+      <button className="search-trigger" onClick={onSearch}><Icon name="search" size={18} /><span>Projelerde ara…</span><kbd>Ctrl K</kbd></button>
+      <div className="section-heading"><div><h2>Son açılanlar</h2><p>En son çalıştığınız projeler</p></div><span>{recents.length} proje</span></div>
+      <div className="project-grid">
+        {recents.length ? recents.map((project) => <button key={project.id} className="project-card" onClick={() => void onOpen(project)}>
+          <span className="project-card__icon"><Icon name="folder" size={20} /></span><span className="project-card__menu"><Icon name="more" size={18} /></span><strong>{project.name}</strong><small>{project.path}</small><footer><span>{project.categoryId}</span>{project.missing ? <span className="status status--warn">Konum yok</span> : <span className="card-open">Aç <Icon name="arrow" size={14} /></span>}</footer>
+        </button>) : <button className="project-card project-card--empty" onClick={onCreate}><span className="project-card__icon"><Icon name="plus" /></span><strong>İlk projenizi oluşturun</strong><small>Şablonlar ve kurallarla temiz bir başlangıç yapın.</small></button>}
       </div>
     </section>
-    <button className="new-project-button" onClick={onCreate}><Icon name="plus" /> Yeni Proje</button>
   </main>
 }
