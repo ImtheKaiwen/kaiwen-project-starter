@@ -62,20 +62,15 @@ export function registerIpc(window: BrowserWindow, services: Services): void {
     const settings = await services.settings.get(); const project = (await services.catalog.read()).find((item) => item.id === requireString(id))
     if (!project) throw new Error('Proje kaydı bulunamadı.')
     try { await access(project.path) } catch { throw new Error('Proje taşınmış veya silinmiş. Ayarlardan kaydı kaldırın ve yeni konumu manuel ekleyin.') }
-    const editor = settings.editorPath.trim() || 'code'
-    if (editor !== 'code' && !path.isAbsolute(editor)) throw new Error('Editör yolu mutlak bir uygulama yolu veya code olmalıdır.')
-    const args = [settings.editorWindowMode === 'reuse' ? '--reuse-window' : '--new-window', project.path]
-    const result = await services.runner.run(editor, args, { timeoutMs: 20_000 }); if (result.code !== 0) throw new Error('VS Code başlatılamadı. Ayarlardan geçerli editör yolunu seçin.')
+    await launchEditor(settings, project.path, services.runner)
     await services.catalog.markOpened(project.id); return ok(undefined)
   })
   handle(IPC.createProject, async (request: CreateProjectRequest) => {
     assertCreateRequest(request); const result = await services.creator.create(await services.settings.get(), request)
     if (request.copyPrompt) clipboard.writeText(result.prompt)
     if (request.openInEditor) {
-      try {
-        const settings = await services.settings.get(); const command = settings.editorPath.trim() || 'code'; const args = [settings.editorWindowMode === 'reuse' ? '--reuse-window' : '--new-window', result.project.path]
-        const editorResult = await services.runner.run(command, args, { timeoutMs: 20_000 }); if (editorResult.code !== 0) result.warnings.push('Proje oluşturuldu ancak editör açılamadı.')
-      } catch { result.warnings.push('Proje oluşturuldu ancak editör açılamadı.') }
+      try { await launchEditor(await services.settings.get(), result.project.path, services.runner) }
+      catch (error) { result.warnings.push(error instanceof Error ? error.message : 'Proje oluşturuldu ancak editör açılamadı.') }
     }
     return ok(result)
   })
@@ -83,6 +78,43 @@ export function registerIpc(window: BrowserWindow, services: Services): void {
   handle(IPC.githubLogin, async () => { await shell.openExternal('https://cli.github.com/manual/gh_auth_login'); return ok(undefined) })
   handle(IPC.setTheme, async (theme: Theme) => { if (!['system', 'light', 'dark'].includes(theme)) throw new Error('Geçersiz tema.'); nativeTheme.themeSource = theme; return ok(undefined) })
   handle(IPC.getStartupStatus, async () => ok(readStartup(app.isPackaged, app)))
+}
+
+async function launchEditor(settings: AppSettings, projectPath: string, runner: CommandRunner): Promise<void> {
+  const configured = settings.editorPath.trim() || 'code'
+  if (configured !== 'code' && !path.isAbsolute(configured)) throw new Error('Editör yolu geçersiz. Ayarlardan Code.exe dosyasını seçin.')
+  const candidates = editorCandidates(configured)
+  const args = [settings.editorWindowMode === 'reuse' ? '--reuse-window' : '--new-window', projectPath]
+  let lastError = ''
+  for (const command of candidates) {
+    if (path.isAbsolute(command)) { try { await access(command) } catch { continue } }
+    try {
+      const result = await runner.run(command, args, { timeoutMs: 20_000 })
+      if (result.code === 0) return
+      lastError = result.stderr || result.stdout
+    } catch (error) { lastError = error instanceof Error ? error.message : '' }
+  }
+  const wantsVsCode = configured === 'code' || /(?:^|[\\/])code(?:\.exe|\.cmd)?$/i.test(configured)
+  if (wantsVsCode) {
+    try { await shell.openExternal(`vscode://file/${encodeURI(projectPath.replace(/\\/g, '/').replace(/^\/+/, ''))}`); return }
+    catch (error) { lastError = error instanceof Error ? error.message : lastError }
+  }
+  throw new Error(`Editör açılamadı.${lastError ? ` ${lastError.slice(0, 160)}` : ' Ayarlardan Code.exe dosyasını seçin.'}`)
+}
+
+function editorCandidates(configured: string): string[] {
+  const candidates: string[] = []
+  if (path.isAbsolute(configured)) {
+    if (/code\.cmd$/i.test(configured)) candidates.push(path.resolve(path.dirname(configured), '..', 'Code.exe'))
+    candidates.push(configured)
+  } else {
+    if (process.env.LOCALAPPDATA) candidates.push(path.join(process.env.LOCALAPPDATA, 'Programs', 'Microsoft VS Code', 'Code.exe'))
+    if (process.env.ProgramFiles) candidates.push(path.join(process.env.ProgramFiles, 'Microsoft VS Code', 'Code.exe'))
+    const programFilesX86 = process.env['ProgramFiles(x86)']
+    if (programFilesX86) candidates.push(path.join(programFilesX86, 'Microsoft VS Code', 'Code.exe'))
+    candidates.push('code')
+  }
+  return [...new Set(candidates)]
 }
 
 function isTrustedUrl(url: string): boolean { return url.startsWith('file://') || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url) }

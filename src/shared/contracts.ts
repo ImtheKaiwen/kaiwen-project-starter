@@ -28,6 +28,7 @@ export interface AppSettings {
     githubVisibility: GitHubVisibility
     initGit: boolean
     includeLogos: boolean
+    quickCreate: boolean
   }
   categories: Category[]
 }

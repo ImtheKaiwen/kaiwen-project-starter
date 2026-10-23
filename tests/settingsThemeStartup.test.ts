@@ -13,7 +13,7 @@ describe('settings, theme and startup', () => {
   it('varsayılan tema sistem, startup ve GitHub kapalıdır; ayarlar atomik okunur', async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), 'kaiwen-settings-')); roots.push(root)
     const service = new SettingsService(path.join(root, 'data', 'settings.json'), root)
-    const settings = await service.get(); expect(settings.theme).toBe('system'); expect(settings.startAtLogin).toBe(false); expect(settings.defaults.createGithubRepo).toBe(false)
+    const settings = await service.get(); expect(settings.theme).toBe('system'); expect(settings.startAtLogin).toBe(false); expect(settings.defaults.createGithubRepo).toBe(false); expect(settings.defaults.quickCreate).toBe(false)
     settings.theme = 'dark'; await service.save(settings); expect((await service.get()).theme).toBe('dark')
   })
   it('merkezi tema tokenlarını açık/koyu temada tanımlar', async () => {
