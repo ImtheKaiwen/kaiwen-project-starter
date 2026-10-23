@@ -1,7 +1,11 @@
 import { app, BrowserWindow } from 'electron'
-import { autoUpdater } from 'electron-updater'
+import updaterPackage from 'electron-updater'
 import type { UpdateState } from '../../shared/contracts'
 import { IPC } from '../../shared/contracts'
+
+// electron-updater is published as CommonJS. Using a named ESM import works in
+// some development bundlers but crashes the packaged Electron main process.
+const { autoUpdater } = updaterPackage
 
 export class UpdateService {
   private state: UpdateState = { status: 'idle' }

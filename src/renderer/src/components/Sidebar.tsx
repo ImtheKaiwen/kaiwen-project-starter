@@ -8,10 +8,10 @@ export function Sidebar({ open, active, projectCount, theme, language, updateSta
   const go = (view: 'home' | 'create' | 'settings') => { onNavigate(view); onClose() }
   const updateAction = updateState.status === 'downloaded' ? onInstallUpdate : updateState.status === 'available' ? onDownloadUpdate : onCheckUpdate
   const updateLabel = updateState.status === 'downloaded' ? t('update.install') : updateState.status === 'downloading' ? `${t('update.downloading')} ${Math.round(updateState.percent ?? 0)}%` : updateState.status === 'available' ? t('update.download') : updateState.status === 'checking' ? t('update.checking') : t('update.current')
-  return <><button className={`sidebar-scrim ${open ? 'is-open' : ''}`} aria-label="Menüyü kapat" tabIndex={open ? 0 : -1} onClick={onClose} />
+  return <><button className={`sidebar-scrim ${open ? 'is-open' : ''}`} aria-label={t('sidebar.close')} tabIndex={open ? 0 : -1} onClick={onClose} />
     <aside className={`sidebar ${open ? 'is-open' : ''}`}>
-      <header><button className="rail-toggle" onClick={onToggle} aria-label={open ? 'Menüyü daralt' : 'Menüyü genişlet'}><Icon name={open ? 'panelClose' : 'panelOpen'} size={20} /></button>{open && <strong>Kaiwen</strong>}</header>
-      <nav aria-label="Ana menü">
+      <header><button className="rail-toggle" onClick={onToggle} aria-label={open ? t('sidebar.collapse') : t('sidebar.expand')}><Icon name={open ? 'panelClose' : 'panelOpen'} size={20} /></button>{open && <strong>Kaiwen</strong>}</header>
+      <nav aria-label={t('sidebar.mainMenu')}>
         <button title={t('sidebar.search')} onClick={onSearch}><Icon name="search" /><span>{t('sidebar.search')}</span><small>⌘K</small></button>
         <button title={t('sidebar.projects')} className={active === 'home' ? 'is-active' : ''} onClick={() => go('home')}><Icon name="home" /><span>{t('sidebar.projects')}</span><small>{projectCount}</small></button>
         <button title={t('sidebar.newProject')} className={active === 'create' ? 'is-active' : ''} onClick={() => go('create')}><Icon name="plus" /><span>{t('sidebar.newProject')}</span></button>
