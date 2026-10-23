@@ -25,6 +25,19 @@ jobs:
       - run: npm run test
       - name: Uygulamayı derle
         run: npm run build
+      - name: Sürüm etiketini hazırla
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $tag = "v$version"
+          git fetch --tags --force
+          $existing = git rev-list -n 1 $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            if ($existing -ne $env:GITHUB_SHA) { throw "$tag etiketi başka bir commit'e ait." }
+          } else {
+            git tag $tag $env:GITHUB_SHA
+            git push origin $tag
+          }
       - name: Windows paketini ve GitHub Release'i yayınla
         run: npx electron-builder --win nsis --publish always
         env:

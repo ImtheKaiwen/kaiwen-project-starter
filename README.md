@@ -89,7 +89,7 @@ GitHub kapalıyken oluşturma tamamen çevrimdışı çalışır. Yerel `git ini
 
 Uygulama `electron-updater` ile GitHub Releases kanalını denetler. Yeni sürüm bulunduğunda sidebar'da modern indirme simgesi görünür; indirme yüzdesi aynı alanda izlenir. İndirme tamamlanınca **Kur ve yeniden başlat** eylemi uygulamayı kapatıp NSIS kurulumunu başlatır. İndirme sırasında ana pencere kapatılırsa uygulama sistem tepsisinde çalışmayı sürdürür; tepsi menüsünden tekrar gösterilebilir.
 
-Sürüm yayınlamak için önce `package.json` sürümünü artırıp commit'i `main` dalına gönderin. Ardından GitHub Actions içindeki **Release** iş akışını `Run workflow` ile bilinçli olarak başlatın. İş akışı yalnız `workflow_dispatch` ile çalışır; push veya etiket yeni sürümü otomatik yayınlamaz.
+Sürüm yayınlamak için önce `package.json` sürümünü artırıp commit'i `main` dalına gönderin. Ardından GitHub Actions içindeki **Release** iş akışını `Run workflow` ile bilinçli olarak başlatın. İş akışı sürüm etiketini bu manuel çalıştırma içinde hazırlar; push veya etiket tek başına yeni sürümü otomatik yayınlamaz.
 
 Manuel `Release` çalışması lint, typecheck ve testler başarılıysa Windows installer, blockmap ve `latest.yml` dosyalarını aynı sürüm numarasıyla GitHub Release'e yayınlar. Kod imzalama sertifikası ayarlanmadıysa installer imzasızdır ve SmartScreen uyarısı gösterebilir.
 
